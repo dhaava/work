@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glassmorphic Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            background: linear-gradient(135deg, #1e1e1e, #383838);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 350px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .login-container h2 {
+            color: #fff;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .input-box {
+            position: relative;
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 5px;
+            outline: none;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .input-box label {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            transition: 0.3s ease;
+            pointer-events: none;
+            font-size: 14px;
+        }
+
+        .input-box input:focus + label,
+        .input-box input:valid + label {
+            top: 10px;
+            font-size: 12px;
+            color: #fff;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff8c00;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: #ff9f33;
+        }
+
+        .forgot-pass {
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .forgot-pass:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <div class="input-box">
+            <input type="text" required>
+            <label>Username</label>
+        </div>
+        <div class="input-box">
+            <input type="password" required>
+            <label>Password</label>
+        </div>
+        <button class="login-btn">Login</button>
+        <div class="forgot-pass">Forgot Password?</div>
+    </div>
+</body>
+</html>
