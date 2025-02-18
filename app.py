@@ -31,30 +31,35 @@ def whatsapp_reply():
     resp = MessagingResponse()
     msg = resp.message()
 
-    # Check if the user asked for an Instagram caption
     if 'caption' in incoming_msg:
-        user_input = incoming_msg.replace('caption', '').strip()  # Get text after 'caption'
-        caption = generate_caption_from_openai(user_input)
-        msg.body(f"Here's your caption: {caption}")
+        user_input = incoming_msg.replace('caption', '').strip()
+        response_text = generate_content(user_input, "caption")
+        msg.body(f"📸 *Instagram Caption:* {response_text}")
+
+    elif 'script' in incoming_msg:
+        user_input = incoming_msg.replace('script', '').strip()
+        response_text = generate_content(user_input, "script")
+        msg.body(f"🎬 *Instagram Script:* {response_text}")
+
     else:
-        msg.body("Send 'caption' followed by your request for an Instagram caption!")
+        msg.body("Send *'caption'* or *'script'* followed by your topic to get Instagram content!")
 
     return str(resp)
 
-# Function to generate Instagram caption using OpenAI GPT
-def generate_caption_from_openai(text):
+# Function to generate Instagram content (captions/scripts)
+def generate_content(text, content_type):
     try:
+        prompt = f"Generate an engaging Instagram {content_type} for: {text}"
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # You can change to "gpt-4" if needed
+            model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are a creative Instagram caption generator."},
-                {"role": "user", "content": f"Generate a catchy Instagram caption for: {text}"}
+                {"role": "system", "content": "You are an expert Instagram content creator."},
+                {"role": "user", "content": prompt}
             ]
         )
-        caption = response["choices"][0]["message"]["content"].strip()
-        return caption
+        return response["choices"][0]["message"]["content"].strip()
     except Exception as e:
-        return "Error generating caption."
+        return f"⚠️ Error generating {content_type}. Please try again later."
 
 # Route to send WhatsApp message (optional)
 @app.route('/send_whatsapp_message', methods=['POST'])
