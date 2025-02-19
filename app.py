@@ -86,12 +86,19 @@ def send_whatsapp_message():
 
 # Function to send WhatsApp messages using Twilio
 def send_whatsapp(to, message):
-    message = twilio_client.messages.create(
-        body=message,
-        from_='whatsapp:' + TWILIO_PHONE_NUMBER,
-        to='whatsapp:' + to
-    )
-    return message.sid
+    max_length = 1600  # Twilio's limit
+    parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]  # Split into 1600-char chunks
+
+    message_sids = []
+    for part in parts:
+        msg = twilio_client.messages.create(
+            body=part,
+            from_='whatsapp:' + TWILIO_PHONE_NUMBER,
+            to='whatsapp:' + to
+        )
+        message_sids.append(msg.sid)
+
+    return message_sids
 
 if __name__ == '__main__':
     app.run(debug=True)
