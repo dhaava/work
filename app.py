@@ -12,7 +12,6 @@ app = Flask(__name__)
 
 # OpenAI API Key (stored in .env)
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-openai.api_key = OPENAI_API_KEY
 
 # Twilio API Key details (stored in .env)
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
@@ -20,7 +19,7 @@ ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 
 # Initialize Twilio Client
-client = Client(ACCOUNT_SID, AUTH_TOKEN)
+twilio_client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 # Route to handle WhatsApp messages
 @app.route('/whatsapp', methods=['POST'])
@@ -49,15 +48,16 @@ def whatsapp_reply():
 # Function to generate Instagram content (captions/scripts)
 def generate_content(text, content_type):
     try:
+        client = openai.OpenAI(api_key=OPENAI_API_KEY)  # Initialize OpenAI client here
         prompt = f"Generate an engaging Instagram {content_type} for: {text}"
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are an expert Instagram content creator."},
                 {"role": "user", "content": prompt}
             ]
         )
-        return response["choices"][0]["message"]["content"].strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
         return f"⚠️ Error generating {content_type}. Please try again later."
 
@@ -71,7 +71,7 @@ def send_whatsapp_message():
 
 # Function to send WhatsApp messages using Twilio
 def send_whatsapp(to, message):
-    message = client.messages.create(
+    message = twilio_client.messages.create(
         body=message,
         from_='whatsapp:' + TWILIO_PHONE_NUMBER,
         to='whatsapp:' + to
