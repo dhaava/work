@@ -3,14 +3,16 @@ from flask import Flask, request, jsonify
 from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from dotenv import load_dotenv
+import google.generativeai as genai
+import logging
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
 
-# OpenAI API Key (stored in .env)
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+# Gemini API Key (stored in .env)
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 
 # Twilio API Key details (stored in .env)
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
@@ -20,9 +22,13 @@ AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 # Initialize Twilio Client
 twilio_client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
+# Configure Gemini API
+genai.configure(api_key=GEMINI_API_KEY)
+
 @app.route('/')
 def home():
     return "Flask app is running on Render!"
+
 # Route to handle WhatsApp messages
 @app.route('/whatsapp', methods=['POST'])
 def whatsapp_reply():
@@ -48,27 +54,17 @@ def whatsapp_reply():
     return str(resp)
 
 # Function to generate Instagram content (captions/scripts)
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
-import openai
-
-# ✅ Correctly initialize OpenAI client
-client = openai.OpenAI(api_key=OPENAI_API_KEY)
-
 def generate_content(text, content_type):
     try:
         prompt = f"Generate an engaging Instagram {content_type} for: {text}"
-        
-        response = client.chat.completions.create(
-            model="gpt-4o",  # ✅ This model is available
-            messages=[
-                {"role": "system", "content": "You are an expert Instagram content creator."},
-                {"role": "user", "content": prompt}
-            ]
+
+        # ✅ Use cheapest & reliable Gemini model: `gemini-1.5-flash`
+        response = genai.generate_text(
+            model="models/gemini-1.5-flash",
+            prompt=prompt
         )
 
-        generated_text = response.choices[0].message.content.strip()
+        generated_text = response.result.strip()
         logging.debug(f"Generated {content_type}: {generated_text}")
         return generated_text
 
