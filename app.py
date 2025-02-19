@@ -61,7 +61,7 @@ def generate_content(text, content_type):
         prompt = f"Generate an engaging Instagram {content_type} for: {text}"
         
         response = client.chat.completions.create(
-            model="gpt-4-turbo",  # ✅ Use the correct model
+            model="gpt-4o",  # ✅ This model is available
             messages=[
                 {"role": "system", "content": "You are an expert Instagram content creator."},
                 {"role": "user", "content": prompt}
