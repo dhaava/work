@@ -56,38 +56,37 @@ import time
 import logging
 from twilio.base.exceptions import TwilioRestException
 
+import datetime
+
 def send_long_message(to, message):
-    max_length = 1599  # ✅ Twilio limit (avoid edge cases)
+    max_length = 1500  # Keep under 1600 characters
+    to = f"whatsapp:{to}"  
 
-    # ✅ Ensure the number format is correct
-    if not to.startswith("+"):
-        logging.error(f"🚨 Invalid phone number format: {to}")
-        return ["🚨 Invalid phone number format! Please use a valid international number."]
-
-    to = f"whatsapp:{to}"  # ✅ Ensure proper WhatsApp format
-
-    # ✅ Split message into chunks
     parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]
-
+    total_parts = len(parts)
     message_sids = []
-    for i, part in enumerate(parts):
-        try:
-            msg = twilio_client.messages.create(
-                body=f"({i+1}/{len(parts)}) {part}",  # ✅ Number each part
-                from_=TWILIO_PHONE_NUMBER,
-                to=to  # ✅ Use properly formatted number
-            )
-            message_sids.append(msg.sid)
-            logging.info(f"✅ Sent part {i+1}/{len(parts)} to {to}")
 
-            time.sleep(2)  # ✅ Add delay to prevent merging
-        
+    for i, part in enumerate(parts):
+        formatted_message = f"({i+1}/{total_parts}) {part}"
+
+        try:
+            send_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=i * 10)  # Delay each message by 10 seconds
+            
+            msg = twilio_client.messages.create(
+                body=formatted_message,
+                from_=TWILIO_PHONE_NUMBER,
+                to=to,
+                send_at=send_time.isoformat(),  # ✅ Scheduled sending
+                schedule_type="fixed"  # Ensures Twilio treats it separately
+            )
+            
+            message_sids.append(msg.sid)
+
         except TwilioRestException as e:
             logging.error(f"⚠️ Twilio Error for part {i+1}: {e.msg}")
             return [f"⚠️ Twilio Error: {e.msg}"]
 
-    return message_sids  # ✅ Return tracking info
-
+    return message_sids  # Return tracking info
 # ✅ Generate Instagram content using Gemini AI
 def generate_content(text, content_type):
     try:
