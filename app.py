@@ -61,7 +61,7 @@ def send_long_message(to, message):
         try:
             msg = twilio_client.messages.create(
                 body=part,
-                from_='whatsapp:' + TWILIO_PHONE_NUMBER,
+                from_=TWILIO_PHONE_NUMBER,
                 to='whatsapp:' + to
             )
             message_sids.append(msg.sid)
