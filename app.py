@@ -56,32 +56,46 @@ def whatsapp_reply():
 
 # ✅ Function to send long messages in chunks
 def send_long_message(to, message):
-    max_length = 1500  # Twilio limit is 1600, but keeping a buffer
+    max_length = 1500  # Twilio max message limit per part
     to = f"whatsapp:{to}"
     
-    parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]
-    
-    # Send the first part immediately
+    # ✅ Improved message splitting logic
+    words = message.split()  # Split message by words
+    parts = []
+    current_part = ""
+
+    for word in words:
+        if len(current_part) + len(word) + 1 <= max_length:
+            current_part += " " + word
+        else:
+            parts.append(current_part.strip())
+            current_part = word
+
+    if current_part:  
+        parts.append(current_part.strip())  # Append the last part
+
+    # ✅ Send first part immediately
     first_message = f"📩 *Part 1/{len(parts)}*\n\n{parts[0]}\n\n👉 _Reply 'next' for more!_"
     twilio_client.messages.create(body=first_message, from_=TWILIO_PHONE_NUMBER, to=to)
 
-    # Store remaining parts for later
+    # ✅ Store remaining parts for later
     if len(parts) > 1:
         pending_messages[to] = parts[1:]  # Store remaining messages
 
     return {"status": "First message sent! Reply 'next' for more."}
 
-# ✅ Function to send the next part when the user replies "next"
+
 def send_next_message(to):
     to = f"whatsapp:{to}"
 
     if to in pending_messages and pending_messages[to]:
         next_part = pending_messages[to].pop(0)  # Get next message part
-        formatted_message = f"📩 *Next Part*\n\n{next_part}\n\n👉 _Reply 'next' for more!_"
-        
+        remaining = len(pending_messages[to])  # Remaining parts count
+
+        formatted_message = f"📩 *Next Part ({remaining + 1} left)*\n\n{next_part}\n\n👉 _Reply 'next' for more!_" if remaining else next_part
         twilio_client.messages.create(body=formatted_message, from_=TWILIO_PHONE_NUMBER, to=to)
 
-        # Remove from pending_messages if all parts are sent
+        # ✅ Remove from pending_messages if all parts are sent
         if not pending_messages[to]:
             del pending_messages[to]
 
