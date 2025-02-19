@@ -51,35 +51,39 @@ def whatsapp_reply():
 
     return jsonify({"status": "Message processed", "message_sids": message_sids})
 
-# ✅ Function to send long messages with error handling
+import time
 import logging
 from twilio.base.exceptions import TwilioRestException
 
-import time
-
 def send_long_message(to, message):
-    max_length = 1600  # Twilio's per-message limit
+    max_length = 1599  # ✅ Twilio limit (avoid edge case)
 
-    # ✅ Split the message into chunks of 1600 characters
-    parts = [message[i:i + max_length] for i in range(0, len(message), max_length)]
-    
+    # ✅ Ensure the number format is correct
+    if not to.startswith("+"):
+        logging.error("🚨 Invalid phone number format!")
+        return ["🚨 Invalid phone number format!"]
+
+    # ✅ Split message into chunks
+    parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]
+
     message_sids = []
     for i, part in enumerate(parts):
         try:
             msg = twilio_client.messages.create(
-                body=f"({i+1}/{len(parts)}) {part}",  # ✅ Add part number
+                body=f"({i+1}/{len(parts)}) {part}",  # ✅ Number each part
                 from_=TWILIO_PHONE_NUMBER,
                 to='whatsapp:' + to
             )
             message_sids.append(msg.sid)
+            logging.info(f"✅ Sent part {i+1}/{len(parts)} to {to}")
 
-            time.sleep(1.5)  # ✅ Add delay to prevent concatenation (1.5 seconds)
+            time.sleep(2)  # ✅ Add delay to prevent merging
         
         except TwilioRestException as e:
             logging.error(f"⚠️ Twilio Error for part {i+1}: {e.msg}")
             return [f"⚠️ Twilio Error: {e.msg}"]
 
-    return message_sids  # ✅ Return message SIDs for tracking
+    return message_sids  # ✅ Return tracking info
 
 # ✅ Generate Instagram content using Gemini AI
 def generate_content(text, content_type):
