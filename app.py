@@ -56,7 +56,7 @@ def generate_content(text, content_type):
     try:
         openai.api_key = OPENAI_API_KEY  
         prompt = f"Generate an engaging Instagram {content_type} for: {text}"
-        
+        client = OpenAI(api_key=OPENAI_API_KEY)
         
         response = client.chat.completions.create(
             model="gpt-4",
