@@ -55,6 +55,8 @@ def whatsapp_reply():
 import logging
 from twilio.base.exceptions import TwilioRestException
 
+import time
+
 def send_long_message(to, message):
     max_length = 1600  # Twilio's per-message limit
 
@@ -66,10 +68,13 @@ def send_long_message(to, message):
         try:
             msg = twilio_client.messages.create(
                 body=f"({i+1}/{len(parts)}) {part}",  # ✅ Add part number
-                from_=TWILIO_PHONE_NUMBER,  # ✅ Use correct Twilio number format
-                to='whatsapp:' + to  # ✅ Ensure "whatsapp:" is included
+                from_=TWILIO_PHONE_NUMBER,
+                to='whatsapp:' + to
             )
             message_sids.append(msg.sid)
+
+            time.sleep(1.5)  # ✅ Add delay to prevent concatenation (1.5 seconds)
+        
         except TwilioRestException as e:
             logging.error(f"⚠️ Twilio Error for part {i+1}: {e.msg}")
             return [f"⚠️ Twilio Error: {e.msg}"]
