@@ -21,6 +21,9 @@ AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 # Initialize Twilio Client
 twilio_client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
+@app.route('/')
+def home():
+    return "Flask app is running on Render!"
 # Route to handle WhatsApp messages
 @app.route('/whatsapp', methods=['POST'])
 def whatsapp_reply():
