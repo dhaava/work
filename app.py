@@ -56,18 +56,18 @@ import logging
 from twilio.base.exceptions import TwilioRestException
 
 def send_long_message(to, message):
-    max_length = 1600  # Twilio's character limit per message
+    max_length = 1600  # Twilio's per-message limit
 
-    # ✅ Ensure message is split into chunks of max 1600 characters
-    parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]  
-
+    # ✅ Split the message into chunks of 1600 characters
+    parts = [message[i:i + max_length] for i in range(0, len(message), max_length)]
+    
     message_sids = []
     for i, part in enumerate(parts):
         try:
             msg = twilio_client.messages.create(
-                body=f"Part {i+1}/{len(parts)}:\n\n{part}",  # ✅ Label message parts
-                from_=TWILIO_PHONE_NUMBER,
-                to='whatsapp:' + to
+                body=f"({i+1}/{len(parts)}) {part}",  # ✅ Add part number
+                from_=TWILIO_PHONE_NUMBER,  # ✅ Use correct Twilio number format
+                to='whatsapp:' + to  # ✅ Ensure "whatsapp:" is included
             )
             message_sids.append(msg.sid)
         except TwilioRestException as e:
