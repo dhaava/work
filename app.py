@@ -46,19 +46,28 @@ def whatsapp_reply():
     return str(resp)
 
 # Function to generate Instagram content (captions/scripts)
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 def generate_content(text, content_type):
     try:
-        client = openai.OpenAI(api_key=OPENAI_API_KEY)  # Initialize OpenAI client here
+        openai.api_key = OPENAI_API_KEY  
         prompt = f"Generate an engaging Instagram {content_type} for: {text}"
-        response = client.chat.completions.create(
+        
+        response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are an expert Instagram content creator."},
                 {"role": "user", "content": prompt}
             ]
         )
-        return response.choices[0].message.content.strip()
+
+        generated_text = response["choices"][0]["message"]["content"].strip()
+        logging.debug(f"Generated {content_type}: {generated_text}")
+        return generated_text
+
     except Exception as e:
+        logging.error(f"Error generating {content_type}: {str(e)}")
         return f"⚠️ Error generating {content_type}. Please try again later."
 
 # Route to send WhatsApp message (optional)
