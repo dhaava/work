@@ -64,7 +64,7 @@ def generate_content(text, content_type):
         model = genai.GenerativeModel("gemini-1.5-flash")  # ✅ Correct model name
         response = model.generate_content(prompt)  # ✅ Correct method call
 
-         generated_text = response.candidates[0].content.parts[0].text if response.candidates else "⚠️ No response generated."
+        generated_text = response.candidates[0].content.parts[0].text if response.candidates else "⚠️ No response generated."
 
         # ✅ Trim to 1600 characters (to avoid Twilio error 21617)
         trimmed_text = generated_text[:1600]
