@@ -56,37 +56,45 @@ import time
 import logging
 from twilio.base.exceptions import TwilioRestException
 
-import datetime
-
 def send_long_message(to, message):
-    max_length = 1500  # Keep under 1600 characters
+    max_length = 1500
     to = f"whatsapp:{to}"  
 
     parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]
-    total_parts = len(parts)
-    message_sids = []
+    
+    first_message = f"📩 *Part 1/{len(parts)}*\n\n{parts[0]}\n\n👉 _Reply 'next' for more!_"
+    
+    # Send first part
+    twilio_client.messages.create(
+        body=first_message,
+        from_=TWILIO_PHONE_NUMBER,
+        to=to
+    )
 
-    for i, part in enumerate(parts):
-        formatted_message = f"({i+1}/{total_parts}) {part}"
+    # Store remaining parts for later sending
+    pending_messages[to] = parts[1:]  # Store remaining messages in a global dict
 
-        try:
-            send_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=i * 10)  # Delay each message by 10 seconds
-            
-            msg = twilio_client.messages.create(
-                body=formatted_message,
-                from_=TWILIO_PHONE_NUMBER,
-                to=to,
-                send_at=send_time.isoformat(),  # ✅ Scheduled sending
-                schedule_type="fixed"  # Ensures Twilio treats it separately
-            )
-            
-            message_sids.append(msg.sid)
+    return "First message sent! Reply 'next' for more."
 
-        except TwilioRestException as e:
-            logging.error(f"⚠️ Twilio Error for part {i+1}: {e.msg}")
-            return [f"⚠️ Twilio Error: {e.msg}"]
+@app.route('/send_next_message', methods=['POST'])
+def send_next_message():
+    to = request.values.get('From', '').replace("whatsapp:", "").strip()
 
-    return message_sids  # Return tracking info
+    if to in pending_messages and pending_messages[to]:
+        next_part = pending_messages[to].pop(0)  # Get the next message part
+        formatted_message = f"📩 *Next Part*\n\n{next_part}\n\n👉 _Reply 'next' for more!_"
+
+        twilio_client.messages.create(
+            body=formatted_message,
+            from_=TWILIO_PHONE_NUMBER,
+            to=f"whatsapp:{to}"
+        )
+
+        return "Next part sent!"
+
+    return "No more messages left!"
+
+
 # ✅ Generate Instagram content using Gemini AI
 def generate_content(text, content_type):
     try:
