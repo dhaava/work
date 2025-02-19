@@ -56,33 +56,23 @@ import logging
 from twilio.base.exceptions import TwilioRestException
 
 def send_long_message(to, message):
-    """Splits long messages and sends via WhatsApp (Twilio)"""
+    max_length = 1600  # Twilio's character limit per message
 
-    max_length = 1600  # Twilio limit per message
+    # ✅ Ensure message is split into chunks of max 1600 characters
     parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]  
 
     message_sids = []
-    to_number = to.strip().replace("whatsapp:", "").lstrip("+")  # ✅ Clean `to` format
-
-    logging.info(f"📩 Sending message to: whatsapp:+{to_number} ({len(parts)} parts)")
-
-    for index, part in enumerate(parts, start=1):
+    for i, part in enumerate(parts):
         try:
             msg = twilio_client.messages.create(
-                body=part,
-                from_=TWILIO_PHONE_NUMBER,  # ✅ Ensure it's 'whatsapp:+14155238886'
-                to=f'whatsapp:+{to_number}'
+                body=f"Part {i+1}/{len(parts)}:\n\n{part}",  # ✅ Label message parts
+                from_=TWILIO_PHONE_NUMBER,
+                to='whatsapp:' + to
             )
             message_sids.append(msg.sid)
-            logging.info(f"✅ Part {index}/{len(parts)} sent. SID: {msg.sid}")
-
         except TwilioRestException as e:
-            logging.error(f"⚠️ Twilio Error for part {index}: {e.msg}")
-
-    if message_sids:
-        logging.info(f"✅ All message parts sent successfully. SIDs: {message_sids}")
-    else:
-        logging.error("❌ Message failed to send.")
+            logging.error(f"⚠️ Twilio Error for part {i+1}: {e.msg}")
+            return [f"⚠️ Twilio Error: {e.msg}"]
 
     return message_sids  # ✅ Return message SIDs for tracking
 
