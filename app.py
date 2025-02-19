@@ -15,8 +15,8 @@ app = Flask(__name__)
 # Environment Variables
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
-ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+ACCOUNT_SID = os.getenv('ACCOUNT_SID')
+AUTH_TOKEN = os.getenv('AUTH_TOKEN')
 
 # Initialize Twilio Client
 twilio_client = Client(ACCOUNT_SID, AUTH_TOKEN)
