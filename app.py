@@ -52,13 +52,15 @@ def whatsapp_reply():
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+from openai import OpenAI
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+
 def generate_content(text, content_type):
     try:
-        openai.api_key = OPENAI_API_KEY  
         prompt = f"Generate an engaging Instagram {content_type} for: {text}"
-        client = OpenAI(api_key=OPENAI_API_KEY)
         
-        response = client.chat.completions.create(
+        response = client.chat.completions.create(  # ✅ Correct OpenAI API call
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are an expert Instagram content creator."},
@@ -66,7 +68,7 @@ def generate_content(text, content_type):
             ]
         )
 
-        generated_text = response["choices"][0]["message"]["content"].strip()
+        generated_text = response.choices[0].message.content.strip()  # ✅ Correct response parsing
         logging.debug(f"Generated {content_type}: {generated_text}")
         return generated_text
 
