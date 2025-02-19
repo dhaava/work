@@ -54,24 +54,24 @@ def whatsapp_reply():
     return str(resp)
 
 # Function to generate Instagram content (captions/scripts)
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))  # ✅ Set API key
+
 def generate_content(text, content_type):
     try:
         prompt = f"Generate an engaging Instagram {content_type} for: {text}"
 
-        # ✅ Use cheapest & reliable Gemini model: `gemini-1.5-flash`
-        response = genai.generate_text(
-            model="models/gemini-1.5-flash",
-            prompt=prompt
-        )
+        # ✅ Corrected Gemini API usage
+        model = genai.GenerativeModel("gemini-1.5-flash")  # ✅ Correct model name
+        response = model.generate_content(prompt)  # ✅ Correct method call
 
-        generated_text = response.result.strip()
+        generated_text = response.text.strip()
         logging.debug(f"Generated {content_type}: {generated_text}")
         return generated_text
 
     except Exception as e:
         logging.error(f"Error generating {content_type}: {str(e)}")
         return f"⚠️ Error generating {content_type}. Please try again later."
-
+        
 # Route to send WhatsApp message (optional)
 @app.route('/send_whatsapp_message', methods=['POST'])
 def send_whatsapp_message():
