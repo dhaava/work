@@ -52,22 +52,37 @@ def whatsapp_reply():
     return jsonify({"status": "Message processed", "message_sids": message_sids})
 
 # ✅ Function to send long messages with error handling
+import logging
+from twilio.base.exceptions import TwilioRestException
+
 def send_long_message(to, message):
+    """Splits long messages and sends via WhatsApp (Twilio)"""
+
     max_length = 1600  # Twilio limit per message
     parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]  
 
     message_sids = []
-    for part in parts:
+    to_number = to.strip().replace("whatsapp:", "").lstrip("+")  # ✅ Clean `to` format
+
+    logging.info(f"📩 Sending message to: whatsapp:+{to_number} ({len(parts)} parts)")
+
+    for index, part in enumerate(parts, start=1):
         try:
             msg = twilio_client.messages.create(
                 body=part,
-                from_=TWILIO_PHONE_NUMBER,
-                to='whatsapp:' + to
+                from_=TWILIO_PHONE_NUMBER,  # ✅ Ensure it's 'whatsapp:+14155238886'
+                to=f'whatsapp:+{to_number}'
             )
             message_sids.append(msg.sid)
+            logging.info(f"✅ Part {index}/{len(parts)} sent. SID: {msg.sid}")
+
         except TwilioRestException as e:
-            logging.error(f"⚠️ Twilio Error: {e.msg}")
-            return [f"⚠️ Twilio Error: {e.msg}"]
+            logging.error(f"⚠️ Twilio Error for part {index}: {e.msg}")
+
+    if message_sids:
+        logging.info(f"✅ All message parts sent successfully. SIDs: {message_sids}")
+    else:
+        logging.error("❌ Message failed to send.")
 
     return message_sids  # ✅ Return message SIDs for tracking
 
