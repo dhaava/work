@@ -32,7 +32,8 @@ def home():
 @app.route('/whatsapp', methods=['POST'])
 def whatsapp_reply():
     incoming_msg = request.values.get('Body', '').lower()
-    sender_number = request.values.get('From')  
+    sender_number = request.values.get('From', '').replace("whatsapp:", "").strip()  # ✅ Remove "whatsapp:" prefix if present
+
 
     print(f"📩 Incoming message from {sender_number}: {incoming_msg}")  
 
@@ -56,12 +57,14 @@ import logging
 from twilio.base.exceptions import TwilioRestException
 
 def send_long_message(to, message):
-    max_length = 1599  # ✅ Twilio limit (avoid edge case)
+    max_length = 1599  # ✅ Twilio limit (avoid edge cases)
 
     # ✅ Ensure the number format is correct
     if not to.startswith("+"):
-        logging.error("🚨 Invalid phone number format!")
-        return ["🚨 Invalid phone number format!"]
+        logging.error(f"🚨 Invalid phone number format: {to}")
+        return ["🚨 Invalid phone number format! Please use a valid international number."]
+
+    to = f"whatsapp:{to}"  # ✅ Ensure proper WhatsApp format
 
     # ✅ Split message into chunks
     parts = [message[i:i+max_length] for i in range(0, len(message), max_length)]
@@ -72,7 +75,7 @@ def send_long_message(to, message):
             msg = twilio_client.messages.create(
                 body=f"({i+1}/{len(parts)}) {part}",  # ✅ Number each part
                 from_=TWILIO_PHONE_NUMBER,
-                to='whatsapp:' + to
+                to=to  # ✅ Use properly formatted number
             )
             message_sids.append(msg.sid)
             logging.info(f"✅ Sent part {i+1}/{len(parts)} to {to}")
