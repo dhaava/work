@@ -60,15 +60,15 @@ def generate_content(text, content_type):
     try:
         prompt = f"Generate an engaging Instagram {content_type} for: {text}"
         
-        response = client.chat.completions.create(  # ✅ New OpenAI API format
-            model="gpt-4",
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",  # ✅ Use the correct model
             messages=[
                 {"role": "system", "content": "You are an expert Instagram content creator."},
                 {"role": "user", "content": prompt}
             ]
         )
 
-        generated_text = response.choices[0].message.content.strip()  # ✅ New response parsing
+        generated_text = response.choices[0].message.content.strip()
         logging.debug(f"Generated {content_type}: {generated_text}")
         return generated_text
 
