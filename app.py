@@ -2,7 +2,6 @@ import os
 from flask import Flask, request, jsonify
 from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
-import openai
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -54,13 +53,14 @@ logging.basicConfig(level=logging.DEBUG)
 
 import openai
 
-openai.api_key = OPENAI_API_KEY  # ✅ Set API key globally
+# ✅ Correctly initialize OpenAI client
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_content(text, content_type):
     try:
         prompt = f"Generate an engaging Instagram {content_type} for: {text}"
         
-        response = openai.ChatCompletion.create(  # ✅ Correct OpenAI API call
+        response = client.chat.completions.create(  # ✅ New OpenAI API format
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are an expert Instagram content creator."},
@@ -68,7 +68,7 @@ def generate_content(text, content_type):
             ]
         )
 
-        generated_text = response["choices"][0]["message"]["content"].strip()  # ✅ Correct response parsing
+        generated_text = response.choices[0].message.content.strip()  # ✅ New response parsing
         logging.debug(f"Generated {content_type}: {generated_text}")
         return generated_text
 
